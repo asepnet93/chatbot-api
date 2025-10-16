@@ -1,5 +1,5 @@
 {
-  "name": "1-express",
+  "name": "chatbot-api",
   "version": "1.0.0",
   "description": "Express server using Google Gemini, Multer, and dotenv configuration",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/asepnet93/1-express.git"
+    "url": "https://github.com/asepnet93/chatbot-api.git"
   },
   "keywords": [
     "express",
@@ -23,11 +23,11 @@
   "author": "Asep Ridwan",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/asepnet93/1-express/issues"
+    "url": "https://github.com/asepnet93/chatbot-api/issues"
   },
-  "homepage": "https://github.com/asepnet93/1-express#readme",
+  "homepage": "https://github.com/asepnet93/chatbot-api#readme",
   "dependencies": {
-    "@google/genai": "^1.25.0",
+    "@google/genai": "1.25.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
