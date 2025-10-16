@@ -41,13 +41,14 @@ app.post("/generate-text", async (req, res) => {
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: prompt,
+    });
 
     res.json({
       success: true,
-      response: responseText,
+      response: response.text,
     });
   } catch (error) {
     console.error("Error pada endpoint /generate-text:", error);
@@ -71,28 +72,34 @@ app.post("/generate-from-image", upload.single("image"), async (req, res) => {
     const { prompt } = req.body;
     const defaultPrompt = "Analisis gambar ini secara detail.";
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
     // Convert image to base64
     const imageBuffer = fs.readFileSync(req.file.path);
     const imageBase64 = imageBuffer.toString("base64");
 
-    const imagePart = {
-      inlineData: {
-        data: imageBase64,
-        mimeType: req.file.mimetype,
-      },
-    };
-
-    const result = await model.generateContent([prompt || defaultPrompt, imagePart]);
-    const responseText = result.response.text();
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt || defaultPrompt },
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType: req.file.mimetype,
+              },
+            },
+          ],
+        },
+      ],
+    });
 
     // Cleanup: hapus file setelah diproses
     fs.unlinkSync(req.file.path);
 
     res.json({
       success: true,
-      response: responseText,
+      response: response.text,
     });
   } catch (error) {
     console.error("Error pada endpoint /generate-from-image:", error);
@@ -109,108 +116,6 @@ app.post("/generate-from-image", upload.single("image"), async (req, res) => {
   }
 });
 
-// Endpoint 3: Generate from Document 
-app.post("/generate-from-document", upload.single("document"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "File dokumen tidak ditemukan.",
-      });
-    }
-
-    const { prompt } = req.body;
-    const defaultPrompt = "Analisis isi dokumen ini.";
-
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Convert document to base64
-    const documentBuffer = fs.readFileSync(req.file.path);
-    const documentBase64 = documentBuffer.toString("base64");
-
-    const documentPart = {
-      inlineData: {
-        data: documentBase64,
-        mimeType: req.file.mimetype,
-      },
-    };
-
-    const result = await model.generateContent([prompt || defaultPrompt, documentPart]);
-    const responseText = result.response.text();
-
-    // Cleanup: hapus file setelah diproses
-    fs.unlinkSync(req.file.path);
-
-    res.json({
-      success: true,
-      response: responseText,
-    });
-  } catch (error) {
-    console.error("Error pada endpoint /generate-from-document:", error);
-    
-    // Cleanup jika ada error
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Terjadi kesalahan saat menganalisis dokumen.",
-    });
-  }
-});
-
-// Endpoint 4: Generate from Audio 
-app.post("/generate-from-audio", upload.single("audio"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "File audio tidak ditemukan.",
-      });
-    }
-
-    const { prompt } = req.body;
-    const defaultPrompt = "Transkripsikan dan analisis audio ini.";
-
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Convert audio to base64
-    const audioBuffer = fs.readFileSync(req.file.path);
-    const audioBase64 = audioBuffer.toString("base64");
-
-    const audioPart = {
-      inlineData: {
-        data: audioBase64,
-        mimeType: req.file.mimetype,
-      },
-    };
-
-    const result = await model.generateContent([prompt || defaultPrompt, audioPart]);
-    const responseText = result.response.text();
-
-    // Cleanup: hapus file setelah diproses
-    fs.unlinkSync(req.file.path);
-
-    res.json({
-      success: true,
-      response: responseText,
-    });
-  } catch (error) {
-    console.error("Error pada endpoint /generate-from-audio:", error);
-    
-    // Cleanup jika ada error
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Terjadi kesalahan saat menganalisis audio.",
-    });
-  }
-});
-
 // Endpoint 5: Chat 
 app.post("/chat", async (req, res) => {
   try {
@@ -223,13 +128,14 @@ app.post("/chat", async (req, res) => {
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: prompt,
+    });
 
     res.json({
       success: true,
-      response: responseText,
+      response: response.text,
     });
   } catch (error) {
     console.error("Error pada endpoint /chat:", error);
@@ -250,31 +156,39 @@ app.post("/analyze-image", upload.single("image"), async (req, res) => {
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+    // Convert image to base64
     const imageBuffer = fs.readFileSync(req.file.path);
     const imageBase64 = imageBuffer.toString("base64");
 
-    const imagePart = {
-      inlineData: {
-        data: imageBase64,
-        mimeType: req.file.mimetype,
-      },
-    };
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: "Apa isi gambar ini? Analisis dan jelaskan secara detail." },
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType: req.file.mimetype,
+              },
+            },
+          ],
+        },
+      ],
+    });
 
-    const result = await model.generateContent(["Apa isi gambar ini?", imagePart]);
-    const responseText = result.response.text();
-
-    // Cleanup
+    // Cleanup: hapus file setelah diproses
     fs.unlinkSync(req.file.path);
 
     res.json({
       success: true,
-      response: responseText,
+      response: response.text,
     });
   } catch (error) {
     console.error("Error pada endpoint /analyze-image:", error);
     
+    // Cleanup jika ada error
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
@@ -285,5 +199,6 @@ app.post("/analyze-image", upload.single("image"), async (req, res) => {
     });
   }
 });
+
 
 app.listen(3000, () => console.log("Server is running di http://localhost:3000"));
